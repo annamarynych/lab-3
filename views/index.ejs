@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>List</title>
+  <meta name="description" content="Name">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+</head>
+
+<body>
+  <div id="app1">
+    <!--TOPNAV START-->
+    <div class="topnav" id="myTopnav">
+      <a v-on:click="to_main" class="active">To home!</a>
+      
+      
+    </div>
+    <!--TOPNAV END!-->
+
+    <!--container -->
+      <div v-if="status == 'main'">
+        <section>
+          <h3 class="hhh3">Список товарів </h3>
+          <div class="content">
+            <div class="clasp">
+              <button v-on:click="append" class="glow-on-hover" type="button"> append</button>
+            </div>
+            <div class="clasl">
+              <button v-on:click="list" class="glow-on-hover" type="button">list</button>
+            </div>
+          </div>
+        </section>
+      </div>
+    
+      <div v-else-if="status == 'append'">
+        <section>
+          <div class="container">
+            <div class="box">
+              <p> <div class="input">
+              <form class="transparent" onsubmit="return false;">
+                <div class="form-inner">
+                <h3>Добавити товар</h3>
+                <label>Введіть назву: 
+                  <input type="text" placeholder="name"
+                    v-on:input="change_input_name"
+                    v-bind:value="input_name"
+                    ref="input_name"
+                  >
+                </label>
+                <label>Введіть ціну : 
+                  <input type="number" placeholder="price"
+                    v-on:input="change_input_price"
+                    v-bind:value="input_price"
+                    ref="input_price"
+                  >
+                </label>
+                <label>Введіть опис: 
+                  <textarea cols="20" rows="0.5" type="text" placeholder="description"
+                    v-on:input="change_input_description"
+                    v-bind:value="input_description"
+                    ref="input_description"
+                  ></textarea>
+                </label>
+                <label>Введіть код товару: 
+                  <input type="number" placeholder="key"
+                    v-on:input="change_input_key"
+                    v-bind:value="input_key"
+                    ref="input_key"
+                  >
+                </label>
+                <input id="main_button" v-on:click="send_data" type="submit" class="center" value="Ok">
+                </div>
+              </form>
+
+              </div> 
+            </div>  
+          </div>
+        </section>
+      </div>
+      <div v-else-if="status == 'list'">
+        <ul v-if="list_array.length">
+          <li v-for="product in list_array">
+            <div class="container">
+              <div class="box">
+                <form class="transparent">
+                  <table class="iksweb">
+                    <tbody>
+                      <tr>
+                        <td rowspan="3">{{product["price"]}}$</td>
+                        <td colspan="3">{{product["name"]}}</td>
+                      </tr>
+                      <tr>
+                        <td colspan="3" rowspan="2">{{product["description"]}}</td>
+                      </tr>
+                      <tr>
+                        <td>{{product["key"]}}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </form>
+              </div>
+            </div>
+
+          </li>
+        </ul>
+        <p v-else>No todos left!</p>
+          
+      </div>
+
+    <!--container end -->
+  </div>
+  <!--footer START-->
+  <div class="footer"> 
+    <p>All Rights Reserved | Design, Front and Backend by
+      <a href="mailto:annamarynych2@gmail.com" target="_blank">Anna Marynych</a> 
+  </p>
+  </div> 
+  <!--footer END!-->
+  
+
+  <script>
+   function myFunction() {
+    var x = document.getElementById("myTopnav");
+     if (x.className === "topnav") {
+      x.className += " responsive";} 
+       else {
+        x.className = "topnav";}}
+          </script>
+  <!--                   -->
+  <script>
+    // status : main, append, list
+    let App = new Vue ({
+        el: "#app1",
+        data: {
+            status: "main",
+            input_price: null,
+            input_name: "",
+            input_description: "",
+            input_key: null,
+            list_array: Array(),
+        },
+        methods: {      
+          to_main(){
+            this.status = "main";
+            this.list_array = Array();
+          },
+          list(){
+            axios.get('/list').then((response) => { 
+              for(let i=0;i<response.data.length;i++){
+                this.list_array.push(response.data[i]); 
+              }
+            });
+
+            this.status = "list";
+          },
+          append(){
+            this.status = "append";
+          },
+          send_data(){
+            if(this.input_name != "" && this.input_price != "" && this.input_description != "" && this.input_key != ""){
+              axios.post('/list', {
+              name: this.input_name,
+              price: this.input_price,
+              description: this.input_description,
+              key: this.input_key})
+                .then((response) => {
+                  console.log("OK");
+                }, (error) => {
+                  console.log(error);
+              });  
+              this.input_price = null;
+              this.input_name = "";
+              this.input_description= "";
+              this.input_key = null;
+            }
+            else{
+              this.$refs.input_name.focus();
+            }
+          },
+          change_input_price(event){
+            this.input_price = event.target.value;
+          },
+          change_input_name(event){
+            this.input_name = event.target.value;
+          },
+          change_input_description(event){
+            this.input_description = event.target.value;
+          },
+          change_input_key(event){
+            this.input_key = event.target.value;
+          }
+            
+        }
+    });
+
+
+  </script>
+</body>
