@@ -5,7 +5,8 @@ const mongodb = require('mongodb');
 const MongoClient = mongodb.MongoClient;
 const mongoUrl = 'mongodb+srv://admin:admin@lab3.jb2ei.mongodb.net/lab3';
 const domen = 'http://localhost:3000';
-
+const swaggerJsDoc = require('swagger-jsdoc');
+const swaggerUI = require('swagger-ui-express');
 const app = express();
 
 app.set('view engine', 'ejs');
@@ -14,6 +15,18 @@ app.use(bodyParser.json());
 app.use('/static', express.static(__dirname + '/public'));
 
 let mongo;
+
+const swaggerOptions = {
+  swaggerDefinition: {
+    info: {
+      title: "КПП",
+      version: '2021',
+    },
+  },
+  apis: ["server.js"]
+};
+
+
 
 MongoClient.connect(mongoUrl, {useUnifiedTopology: true})
 .then(function(client) {
@@ -31,8 +44,8 @@ app.post('/list', function (request, response){
       price: request.body.price,
       description: request.body.description,
       key: request.body.key,
-    }).then(function() {
-      console.log('Запис створено');
+    }).then(function(arr) {
+      response.json(arr.ops);
     });
   }
   else{
@@ -50,6 +63,33 @@ app.get('/list', function (request, response){
     response.json(arr);
   });
 });
+const swaggerDocs = swaggerJsDoc(swaggerOptions);
+app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerDocs));
+console.log(swaggerDocs)
+/** 
+* @swagger
+* /list/:
+*   post:
+*     description: post new product
+*     parameters:
+*      - in: body
+*        name: body
+*        description: post
+*        required: true
+*     responses:
+*       201:
+*         description: 
+*/
+/**
+* @swagger
+* paths:
+*  /list/:
+*   get:
+*     description: get all list
+*     responses:
+*       200:
+*         description: Success
+*/
 
 app.listen(3000, function() {
   console.log('App started on '+ domen);
